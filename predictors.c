@@ -48,18 +48,28 @@ inputFile = fopen(argv[1],"r");
 FILE * outputFile;
 outputFile = fopen(argv[2],"w");
 
-while(fscanf(inputFile, "%d%c%d\n", &branch, &behavior, &next) != EOF) {
+char local,global,selector,final;
+
+while(fscanf(inputFile, "%d%c%d\n", &addr, &behavior, &next) != EOF) {
+   fprintf(outputFile, "%d",addr);
    if(behavior=='t') {//taken-------------------
      xT++;//static
 
 //Tournament-------------------------------------------------
+final = 'n';
+global = 'n';
+local = 'n';
 
     if(tour[(addr%10)]==0 || tour[(addr%10)]==1){//prefer gshare
+      selector = 'g';
       if(tourGshare[(addr ^ tG11)%10]==0 || tourGshare[(addr ^ tG11)%10]==1){//correct
         xGlobal++;
         xTournament++;
+        final = 't';
+	global = 't';
         if(tourBimodal[addr%10]==1 || tourBimodal[addr%10]==0){//bimodal also correct
 	  xLocal++;
+          local ='t';
           tour[(addr%10)]=tour[(addr%10)];
         }else{//bimodal not correct
           tour[(addr%10)]=0;
@@ -68,14 +78,20 @@ while(fscanf(inputFile, "%d%c%d\n", &branch, &behavior, &next) != EOF) {
         if(tourBimodal[addr%10]==1 || tourBimodal[addr%10]==0){//but bi modal is ocrrect
           tour[(addr%10)]=tour[(addr%10)]+1;
           xLocal++;
+	  local = 't';
         }
       }
     }else{//prefer bimodal
+      selector = 'l';
       if(tourBimodal[addr%10]==1 || tourBimodal[addr%10]==0){//correct prdiction
         xTournament++;
         xLocal++;
+        final = 't';
+	local = 't';
         if(tourGshare[(addr ^ tG11)%10]==0 || tourGshare[(addr ^ tG11)%10]==1){//gshare also correct
           tour[(addr%10)]=tour[(addr%10)];
+	  xGlobal++;
+	  global = 't';
         }else{//gshare incorrect
           tour[(addr%10)]=3;
         }
@@ -83,6 +99,8 @@ while(fscanf(inputFile, "%d%c%d\n", &branch, &behavior, &next) != EOF) {
         if(tourGshare[(addr ^ tG11)%10]==0 || tourGshare[(addr ^ tG11)%10]==1){//gshare only correct
           tour[(addr%10)]=tour[(addr%10)]-1;
           xGlobal++;
+	  global = 't';
+
         }
       }
     }
@@ -90,18 +108,25 @@ while(fscanf(inputFile, "%d%c%d\n", &branch, &behavior, &next) != EOF) {
     tourGshare[(addr ^ tG11)%10]=TwoBit(tourGshare[(addr ^ tG11)%10],0);
     tG11 = UpdateG(tG11, 11, (addr%10), 0);
 
-
+ 
    }else {//Not taken----------------------------------------
      xNT++;//static
-
+final = 't';
+global = 't';
+local = 't';
 //Tournament-------------------------------------------------
 
     if(tour[(addr%10)]==0 || tour[(addr%10)]==1){//prefer gshare
+      selector = 'g';
       if(tourGshare[(addr ^ tG11)%10]==2 || tourGshare[(addr ^ tG11)%10]==3){//correct
         xTournament++;
+	xGlobal++;
+	final = 'n';
+	global = 'n';
         if(tourBimodal[addr%10]==2 || tourBimodal[addr%10]==3){//bimodal also correct
           tour[(addr%10)]=tour[(addr%10)];
 	  xLocal++;
+	  local = 'n';
         }else{//bimodal not correct
           tour[(addr%10)]=0;
         }
@@ -109,15 +134,20 @@ while(fscanf(inputFile, "%d%c%d\n", &branch, &behavior, &next) != EOF) {
         if(tourBimodal[addr%10]==2 || tourBimodal[addr%10]==3){//but bi modal is ocrrect
           tour[(addr%10)]=tour[(addr%10)]+1;
 	  xLocal++;
+	  local ='n';
         }
       }
     }else{//prefer bimodal
+      selector = 'l';
       if(tourBimodal[addr%10]==2 || tourBimodal[addr%10]==3){//correct prdiction
         xLocal++;
         xTournament++;
+	final = 'n';
+	local = 'n';
         if(tourGshare[(addr ^ tG11)%10]==2 || tourGshare[(addr ^ tG11)%10]==3){//gshare also correct
           tour[(addr%10)]=tour[(addr%10)];
 	  xGlobal++;
+	  global ='n';
         }else{//gshare incorrect
           tour[(addr%10)]=3;
         }
@@ -125,20 +155,22 @@ while(fscanf(inputFile, "%d%c%d\n", &branch, &behavior, &next) != EOF) {
         if(tourGshare[(addr ^ tG11)%10]==2 || tourGshare[(addr ^ tG11)%10]==3){//gshare only correct
           tour[(addr%10)]=tour[(addr%10)]-1;
 	  xGlobal++;
+	  global = 'n';
         }
       }
     }
     tourBimodal[(addr%10)]=TwoBit(tourBimodal[(addr%10)],1);
     tourGshare[(addr ^ tG11)%10]=TwoBit(tourGshare[(addr ^ tG11)%10],1);
     tG11 = UpdateG(tG11, 11, (addr%10), 1);
-
+   }
+   fprintf(outputFile, "%c%c%c%c%c\n",local,global,selector,final, behavior);
    y++;
 }
 fclose(inputFile);
 //----------------------------------------------------------
-fprintf(outputFile, "%lld,%lld;\n", xT, y);
-fprintf(outputFile, "%lld,%lld;\n", xNT, y);
-fprintf(outputFile, "%lld,%lld;\n", xTournament, y);
+//fprintf(outputFile, "Total Taken: %lld,%lld;\n", xT, y);
+//fprintf(outputFile, "Total Not Taken: %lld,%lld;\n", xNT, y);
+//fprintf(outputFile, "Total Tournament correct predictions: %lld,%lld;\n", xTournament, y);
 fclose(outputFile);
 //-----------------------------------------------------------
 
