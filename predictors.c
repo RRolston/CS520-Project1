@@ -35,9 +35,19 @@ long long int xGlobal=0;//global predictor count
 //Prediction Logic-------------------------------------------
 //-Tournament------------------------------------------------
 int tour[10]={0};//0-3
-int tourGshare[10]={0};
-int tG11=0;//Gshare state
+int i;
+for(i=0; i<10; i++){
+	tour[i]=3;
+}
+int tourGshare[64]={0};
+for(i=0; i<64; i++){
+	tourGshare[i]=3;
+}
+int tG11= 0b111111;//Gshare state
 int tourBimodal[10]={0};
+for(i=0; i<10; i++){
+	tourBimodal[i]=3;
+}
 //not taken = 1, taken = 0, 
 //strongly taken = 0, strongly not taken =3, taken not taken = 1, not taken taken =2
 //Read & Count-----------------------------------------------
@@ -62,7 +72,7 @@ local = 'n';
 
     if(tour[(addr%10)]==0 || tour[(addr%10)]==1){//prefer gshare
       selector = 'g';
-      if(tourGshare[(addr ^ tG11)%10]==0 || tourGshare[(addr ^ tG11)%10]==1){//correct
+      if(tourGshare[( tG11)]==0 || tourGshare[( tG11)]==1){//correct
         xGlobal++;
         xTournament++;
         final = 't';
@@ -88,7 +98,7 @@ local = 'n';
         xLocal++;
         final = 't';
 	local = 't';
-        if(tourGshare[(addr ^ tG11)%10]==0 || tourGshare[(addr ^ tG11)%10]==1){//gshare also correct
+        if(tourGshare[( tG11)]==0 || tourGshare[( tG11)]==1){//gshare also correct
           tour[(addr%10)]=tour[(addr%10)];
 	  xGlobal++;
 	  global = 't';
@@ -96,7 +106,7 @@ local = 'n';
           tour[(addr%10)]=3;
         }
       }else{//worng prediction
-        if(tourGshare[(addr ^ tG11)%10]==0 || tourGshare[(addr ^ tG11)%10]==1){//gshare only correct
+        if(tourGshare[(tG11)]==0 || tourGshare[(tG11)]==1){//gshare only correct
           tour[(addr%10)]=tour[(addr%10)]-1;
           xGlobal++;
 	  global = 't';
@@ -105,8 +115,8 @@ local = 'n';
       }
     }
     tourBimodal[(addr%10)]=TwoBit(tourBimodal[(addr%10)],0);
-    tourGshare[(addr ^ tG11)%10]=TwoBit(tourGshare[(addr ^ tG11)%10],0);
-    tG11 = UpdateG(tG11, 11, (addr%10), 0);
+    tourGshare[(tG11)]=TwoBit(tourGshare[(tG11)],0);
+    tG11 = UpdateG(tG11, 6, (addr%10), 0);
 
  
    }else {//Not taken----------------------------------------
@@ -118,7 +128,7 @@ local = 't';
 
     if(tour[(addr%10)]==0 || tour[(addr%10)]==1){//prefer gshare
       selector = 'g';
-      if(tourGshare[(addr ^ tG11)%10]==2 || tourGshare[(addr ^ tG11)%10]==3){//correct
+      if(tourGshare[( tG11)]==2 || tourGshare[( tG11)]==3){//correct
         xTournament++;
 	xGlobal++;
 	final = 'n';
@@ -144,7 +154,7 @@ local = 't';
         xTournament++;
 	final = 'n';
 	local = 'n';
-        if(tourGshare[(addr ^ tG11)%10]==2 || tourGshare[(addr ^ tG11)%10]==3){//gshare also correct
+        if(tourGshare[( tG11)]==2 || tourGshare[( tG11)]==3){//gshare also correct
           tour[(addr%10)]=tour[(addr%10)];
 	  xGlobal++;
 	  global ='n';
@@ -152,7 +162,7 @@ local = 't';
           tour[(addr%10)]=3;
         }
       }else{//worng prediction
-        if(tourGshare[(addr ^ tG11)%10]==2 || tourGshare[(addr ^ tG11)%10]==3){//gshare only correct
+        if(tourGshare[( tG11)]==2 || tourGshare[( tG11)]==3){//gshare only correct
           tour[(addr%10)]=tour[(addr%10)]-1;
 	  xGlobal++;
 	  global = 'n';
@@ -160,17 +170,19 @@ local = 't';
       }
     }
     tourBimodal[(addr%10)]=TwoBit(tourBimodal[(addr%10)],1);
-    tourGshare[(addr ^ tG11)%10]=TwoBit(tourGshare[(addr ^ tG11)%10],1);
-    tG11 = UpdateG(tG11, 11, (addr%10), 1);
+    tourGshare[( tG11)]=TwoBit(tourGshare[( tG11)],1);
+    tG11 = UpdateG(tG11, 6, (addr%10), 1);
    }
    fprintf(outputFile, "%c%c%c%c%c\n",local,global,selector,final, behavior);
    y++;
 }
 fclose(inputFile);
 //----------------------------------------------------------
-//fprintf(outputFile, "Total Taken: %lld,%lld;\n", xT, y);
-//fprintf(outputFile, "Total Not Taken: %lld,%lld;\n", xNT, y);
-//fprintf(outputFile, "Total Tournament correct predictions: %lld,%lld;\n", xTournament, y);
+printf( "Total Taken: %lld,%lld;\n", xT, y);
+printf( "Total Not Taken: %lld,%lld;\n", xNT, y);
+printf( "Total Local correct predictions: %lld,%lld;\n", xLocal, y);
+printf( "Total Global correct predictions: %lld,%lld;\n", xGlobal, y);
+printf( "Total Tournament correct predictions: %lld,%lld;\n", xTournament, y);
 fclose(outputFile);
 //-----------------------------------------------------------
 
@@ -214,10 +226,11 @@ int UpdateG(int G, int Gsize, int Gaddr, int act){
     if(act==0){//taken
       G= G<<1;
       G= G&modder;
-      G= G|1;
+
     }else{
       G= G<<1;
       G= G&modder;
+      G= G|1;
   }
   return G;
 }

@@ -35,9 +35,19 @@ long long int xGlobal=0;//global predictor count
 //Prediction Logic-------------------------------------------
 //-Tournament------------------------------------------------
 int tour[10]={0};//0-3
-int tourGshare[10]={0};
-int tG11=0;//Gshare state
+int i;
+for(i=0; i<10; i++){
+	tour[i]=3;
+}
+int tourGshare[64]={0};
+for(i=0; i<64; i++){
+	tourGshare[i]=3;
+}
+int tG11= 0b111111;//Gshare state
 int tourBimodal[10]={0};
+for(i=0; i<10; i++){
+	tourBimodal[i]=3;
+}
 //not taken = 1, taken = 0, 
 //strongly taken = 0, strongly not taken =3, taken not taken = 1, not taken taken =2
 //Read & Count-----------------------------------------------
@@ -52,24 +62,24 @@ char local,global,selector,final;
 
 while(fscanf(inputFile, "%d%c%d\n", &addr, &behavior, &next) != EOF) {
    fprintf(outputFile, "%d",addr);
-   if(behavior=='n') {//taken-------------------
+   if(behavior=='t') {//taken-------------------
      xT++;//static
 
 //Tournament-------------------------------------------------
-final = 't';
-global = 't';
-local = 't';
+final = 'n';
+global = 'n';
+local = 'n';
 
     if(tour[(addr%10)]==0 || tour[(addr%10)]==1){//prefer gshare
-      selector = 'l';
-      if(tourGshare[(addr ^ tG11)%10]==0 || tourGshare[(addr ^ tG11)%10]==1){//correct
+      selector = 'g';
+      if(tourGshare[( tG11)]==0 || tourGshare[( tG11)]==1){//correct
         xGlobal++;
         xTournament++;
-        final = 'n';
-	global = 'n';
+        final = 't';
+	global = 't';
         if(tourBimodal[addr%10]==1 || tourBimodal[addr%10]==0){//bimodal also correct
 	  xLocal++;
-          local ='n';
+          local ='t';
           tour[(addr%10)]=tour[(addr%10)];
         }else{//bimodal not correct
           tour[(addr%10)]=0;
@@ -78,55 +88,55 @@ local = 't';
         if(tourBimodal[addr%10]==1 || tourBimodal[addr%10]==0){//but bi modal is ocrrect
           tour[(addr%10)]=tour[(addr%10)]+1;
           xLocal++;
-	  local = 'n';
+	  local = 't';
         }
       }
     }else{//prefer bimodal
-      selector = 'g';
+      selector = 'l';
       if(tourBimodal[addr%10]==1 || tourBimodal[addr%10]==0){//correct prdiction
         xTournament++;
         xLocal++;
-        final = 'n';
-	local = 'n';
-        if(tourGshare[(addr ^ tG11)%10]==0 || tourGshare[(addr ^ tG11)%10]==1){//gshare also correct
+        final = 't';
+	local = 't';
+        if(tourGshare[( tG11)]==0 || tourGshare[( tG11)]==1){//gshare also correct
           tour[(addr%10)]=tour[(addr%10)];
 	  xGlobal++;
-	  global = 'n';
+	  global = 't';
         }else{//gshare incorrect
           tour[(addr%10)]=3;
         }
       }else{//worng prediction
-        if(tourGshare[(addr ^ tG11)%10]==0 || tourGshare[(addr ^ tG11)%10]==1){//gshare only correct
+        if(tourGshare[(tG11)]==0 || tourGshare[(tG11)]==1){//gshare only correct
           tour[(addr%10)]=tour[(addr%10)]-1;
           xGlobal++;
-	  global = 'n';
+	  global = 't';
 
         }
       }
     }
     tourBimodal[(addr%10)]=TwoBit(tourBimodal[(addr%10)],0);
-    tourGshare[(addr ^ tG11)%10]=TwoBit(tourGshare[(addr ^ tG11)%10],0);
-    tG11 = UpdateG(tG11, 11, (addr%10), 0);
+    tourGshare[(tG11)]=TwoBit(tourGshare[(tG11)],0);
+    tG11 = UpdateG(tG11, 6, (addr%10), 0);
 
  
    }else {//Not taken----------------------------------------
      xNT++;//static
-final = 'n';
-global = 'n';
-local = 'n';
+final = 't';
+global = 't';
+local = 't';
 //Tournament-------------------------------------------------
 
     if(tour[(addr%10)]==0 || tour[(addr%10)]==1){//prefer gshare
-      selector = 'l';
-      if(tourGshare[(addr ^ tG11)%10]==2 || tourGshare[(addr ^ tG11)%10]==3){//correct
+      selector = 'g';
+      if(tourGshare[( tG11)]==2 || tourGshare[( tG11)]==3){//correct
         xTournament++;
 	xGlobal++;
-	final = 't';
-	global = 't';
+	final = 'n';
+	global = 'n';
         if(tourBimodal[addr%10]==2 || tourBimodal[addr%10]==3){//bimodal also correct
           tour[(addr%10)]=tour[(addr%10)];
 	  xLocal++;
-	  local = 't';
+	  local = 'n';
         }else{//bimodal not correct
           tour[(addr%10)]=0;
         }
@@ -134,34 +144,34 @@ local = 'n';
         if(tourBimodal[addr%10]==2 || tourBimodal[addr%10]==3){//but bi modal is ocrrect
           tour[(addr%10)]=tour[(addr%10)]+1;
 	  xLocal++;
-	  local ='t';
+	  local ='n';
         }
       }
     }else{//prefer bimodal
-      selector = 'g';
+      selector = 'l';
       if(tourBimodal[addr%10]==2 || tourBimodal[addr%10]==3){//correct prdiction
         xLocal++;
         xTournament++;
-	final = 't';
-	local = 't';
-        if(tourGshare[(addr ^ tG11)%10]==2 || tourGshare[(addr ^ tG11)%10]==3){//gshare also correct
+	final = 'n';
+	local = 'n';
+        if(tourGshare[( tG11)]==2 || tourGshare[( tG11)]==3){//gshare also correct
           tour[(addr%10)]=tour[(addr%10)];
 	  xGlobal++;
-	  global ='t';
+	  global ='n';
         }else{//gshare incorrect
           tour[(addr%10)]=3;
         }
       }else{//worng prediction
-        if(tourGshare[(addr ^ tG11)%10]==2 || tourGshare[(addr ^ tG11)%10]==3){//gshare only correct
+        if(tourGshare[( tG11)]==2 || tourGshare[( tG11)]==3){//gshare only correct
           tour[(addr%10)]=tour[(addr%10)]-1;
 	  xGlobal++;
-	  global = 't';
+	  global = 'n';
         }
       }
     }
     tourBimodal[(addr%10)]=TwoBit(tourBimodal[(addr%10)],1);
-    tourGshare[(addr ^ tG11)%10]=TwoBit(tourGshare[(addr ^ tG11)%10],1);
-    tG11 = UpdateG(tG11, 11, (addr%10), 1);
+    tourGshare[( tG11)]=TwoBit(tourGshare[( tG11)],1);
+    tG11 = UpdateG(tG11, 6, (addr%10), 1);
    }
    fprintf(outputFile, "%c%c%c%c%c\n",local,global,selector,final, behavior);
    y++;
@@ -214,10 +224,11 @@ int UpdateG(int G, int Gsize, int Gaddr, int act){
     if(act==0){//taken
       G= G<<1;
       G= G&modder;
-      G= G|1;
+
     }else{
       G= G<<1;
       G= G&modder;
+      G= G|1;
   }
   return G;
 }
