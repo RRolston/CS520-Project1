@@ -67,7 +67,6 @@ while(fscanf(inputFile, "%d%c%d\n", &branch, &behavior, &next) != EOF) {
       }else{//gshare incorrect
         if(tourBimodal[addr%10]==1 || tourBimodal[addr%10]==0){//but bi modal is ocrrect
           tour[(addr%10)]=tour[(addr%10)]+1;
-          xLocal++;
         }
       }
     }else{//prefer bimodal
@@ -108,7 +107,6 @@ while(fscanf(inputFile, "%d%c%d\n", &branch, &behavior, &next) != EOF) {
       }else{//gshare incorrect
         if(tourBimodal[addr%10]==2 || tourBimodal[addr%10]==3){//but bi modal is ocrrect
           tour[(addr%10)]=tour[(addr%10)]+1;
-	  xLocal++;
         }
       }
     }else{//prefer bimodal
