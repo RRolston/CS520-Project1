@@ -1,0 +1,13 @@
+A. If your local predictor were used in isolation, how many of the 10000 predictions would have been correct?
+
+	Total Local correct predictions: 8559 out of 10000;
+
+
+B. If your global predictor were used in isolation, how many of the 10000 predictions would have been correct?
+
+	Total Global correct predictions: 9266 out of 10000;
+
+
+C. Using your tounament predictor were used in isolation, how many of the 10000 predictions would have been correct?
+
+	Total Tournament correct predictions: 9978 out of 10000;
